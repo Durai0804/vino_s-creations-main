@@ -9,50 +9,24 @@ const localKeyPath = path.join(__dirname, '../../vino-s-creation-5e2acd327ff6.js
 
 if (fs.existsSync(localKeyPath)) {
     serviceAccount = require(localKeyPath);
+    console.log('Firebase: Loaded from local JSON file');
 } else {
-    // Fallback to environment variable (for Vercel)
-    const envConfig = process.env.FIREBASE_SERVICE_ACCOUNT;
-    if (envConfig) {
-        try {
-            console.log('Attempting to parse FIREBASE_SERVICE_ACCOUNT...');
-            let cleanJson = envConfig.trim();
+    // Use INDIVIDUAL environment variables (most reliable for Vercel)
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
-            // Strip any surrounding quotes (single or double)
-            if ((cleanJson.startsWith("'") && cleanJson.endsWith("'")) ||
-                (cleanJson.startsWith('"') && cleanJson.endsWith('"'))) {
-                cleanJson = cleanJson.substring(1, cleanJson.length - 1);
-            }
-
-            // Initial parse
-            serviceAccount = JSON.parse(cleanJson);
-
-            // If the result is somehow still a string, parse it again (recursive parsing)
-            while (typeof serviceAccount === 'string') {
-                console.log('Result was a string, parsing again...');
-                serviceAccount = JSON.parse(serviceAccount);
-            }
-
-            if (serviceAccount && typeof serviceAccount === 'object') {
-                console.log('Parsed Keys:', Object.keys(serviceAccount));
-
-                // Fix private_key format if present
-                if (serviceAccount.private_key) {
-                    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-                }
-
-                if (serviceAccount.project_id) {
-                    console.log('Successfully identified Project ID:', serviceAccount.project_id);
-                } else {
-                    console.error('CRITICAL: project_id MISSING in parsed object!');
-                }
-            } else {
-                console.error('CRITICAL: Parsed result is NOT an object! Type:', typeof serviceAccount);
-            }
-        } catch (err) {
-            console.error('FAILED to parse FIREBASE_SERVICE_ACCOUNT JSON!');
-            console.error('Error:', err.message);
-            console.error('First 50 chars of input:', envConfig.substring(0, 50));
-        }
+    if (projectId && clientEmail && privateKey) {
+        serviceAccount = {
+            type: 'service_account',
+            project_id: projectId,
+            client_email: clientEmail,
+            // Vercel stores \n as literal \\n, so we fix it here
+            private_key: privateKey.replace(/\\n/g, '\n'),
+        };
+        console.log('Firebase: Loaded from individual env vars. Project ID:', projectId);
+    } else {
+        console.error('Firebase ERROR: Missing FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, or FIREBASE_PRIVATE_KEY env vars');
     }
 }
 
@@ -66,6 +40,7 @@ let db;
 try {
     if (admin.apps.length > 0) {
         db = admin.firestore();
+        console.log('Firebase: Firestore connected successfully');
     }
 } catch (err) {
     console.error('Firestore init error:', err.message);
