@@ -10,8 +10,10 @@ const authMiddleware = (req, res, next) => {
 
         const password = authHeader.split('Bearer ')[1];
 
-        // Hardcoded manual password check as requested
-        if (password !== 'Rasukutty0804') {
+        // List of valid passwords for admins
+        const validPasswords = ['V9514773265p', 'Rasukutty0804'];
+
+        if (!validPasswords.includes(password)) {
             return res.status(401).json({ error: 'Unauthorized: Invalid password' });
         }
 

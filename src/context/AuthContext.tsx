@@ -23,8 +23,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const isAdmin = user?.email ? ADMIN_EMAILS.includes(user.email) : false;
-
     useEffect(() => {
         const savedUser = localStorage.getItem('vino_admin_user');
         if (savedUser) {
@@ -34,18 +32,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = async (email: string, pass: string) => {
-        if (!ADMIN_EMAILS.includes(email)) {
-            throw new Error('Unauthorized email address');
+        setLoading(true);
+
+        // Simple manual validation as requested
+        const validAdmins = {
+            'pvino4898@gmail.com': 'V9514773265p',
+            'chairmadurai0804@gmail.com': 'Rasukutty0804'
+        };
+
+        const targetPass = validAdmins[email as keyof typeof validAdmins];
+
+        if (targetPass && pass === targetPass) {
+            localStorage.setItem('vino_admin_user', JSON.stringify({ email }));
+            localStorage.setItem('vino_admin_pass', pass);
+            setUser({ email });
+            setLoading(false);
+            return;
         }
 
-        if (pass !== 'Rasukutty0804') {
-            throw new Error('Invalid password');
-        }
-
-        const loggedInUser = { email };
-        setUser(loggedInUser);
-        localStorage.setItem('vino_admin_user', JSON.stringify(loggedInUser));
-        localStorage.setItem('vino_admin_pass', pass); // For API requests
+        setLoading(false);
+        throw new Error('Invalid email or password');
     };
 
     const logout = () => {
@@ -53,6 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('vino_admin_user');
         localStorage.removeItem('vino_admin_pass');
     };
+
+    const isAdmin = !!user;
 
     return (
         <AuthContext.Provider value={{ user, isAdmin, loading, login, logout }}>
