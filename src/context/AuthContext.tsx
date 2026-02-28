@@ -1,9 +1,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
-const ADMIN_EMAILS = [
-    'pvino4898@gmail.com',
-    'chairmadurai0804@gmail.com'
-];
+
 
 interface User {
     email: string;
