@@ -103,38 +103,38 @@ export default function AdminDashboard() {
         <div className={`min-h-screen pt-20 pb-12 ${isDark ? 'bg-charcoal' : 'bg-cream'}`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
                     <div>
-                        <h1 className={`font-serif text-3xl font-bold ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
+                        <h1 className={`font-serif text-3xl sm:text-4xl font-bold ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
                             Admin Dashboard
                         </h1>
                         <p className={`text-sm mt-1 ${isDark ? 'text-dark-text/50' : 'text-light-text/60'}`}>
                             Welcome back, {user?.email}
                         </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => { setEditingProduct(null); setShowForm(true); }}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold
                 bg-gradient-to-r from-gold to-gold-muted text-charcoal
-                hover:shadow-[0_4px_20px_rgba(212,168,83,0.3)] transition-shadow duration-300"
+                hover:shadow-[0_4px_20px_rgba(212,168,83,0.3)] transition-all duration-300 shadow-lg shadow-gold/10"
                         >
-                            <Plus size={16} />
+                            <Plus size={18} />
                             Add Product
                         </motion.button>
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={handleLogout}
-                            className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-colors
+                            className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300
                 ${isDark
                                     ? 'bg-dark-card border border-dark-border text-dark-text/60 hover:text-red-400 hover:border-red-400/30'
                                     : 'bg-white border border-beige-dark/30 text-light-text/60 hover:text-red-500 hover:border-red-500/30'
                                 }`}
                         >
-                            <LogOut size={16} />
+                            <LogOut size={18} />
                             Logout
                         </motion.button>
                     </div>
@@ -223,23 +223,24 @@ export default function AdminDashboard() {
                                         className="w-full h-full object-cover"
                                     />
                                     <div className={`absolute inset-0 flex items-center justify-center gap-3
-                    opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                    transition-opacity duration-300
+                    md:opacity-0 md:group-hover:opacity-100
                     ${isDark ? 'bg-charcoal/70' : 'bg-black/40'}`}>
                                         <motion.button
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => openEditForm(product)}
-                                            className="p-3 rounded-full bg-white/90 text-charcoal hover:bg-gold hover:text-white transition-colors"
+                                            className="p-3 rounded-full bg-white/90 text-charcoal shadow-lg hover:bg-gold hover:text-white transition-colors"
                                         >
-                                            <Edit size={16} />
+                                            <Edit size={18} />
                                         </motion.button>
                                         <motion.button
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
                                             onClick={() => setDeleteConfirm(product.id)}
-                                            className="p-3 rounded-full bg-white/90 text-red-500 hover:bg-red-500 hover:text-white transition-colors"
+                                            className="p-3 rounded-full bg-white/90 text-red-500 shadow-lg hover:bg-red-500 hover:text-white transition-colors"
                                         >
-                                            <Trash2 size={16} />
+                                            <Trash2 size={18} />
                                         </motion.button>
                                     </div>
                                     <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs
