@@ -1,0 +1,39 @@
+const admin = require('firebase-admin');
+const path = require('path');
+const fs = require('fs');
+
+let serviceAccount;
+
+// Try to load from local file first (for local dev)
+const localKeyPath = path.join(__dirname, '../../vino-s-creation-5e2acd327ff6.json');
+
+if (fs.existsSync(localKeyPath)) {
+    serviceAccount = require(localKeyPath);
+} else {
+    // Fallback to environment variable (for Vercel)
+    const envConfig = process.env.FIREBASE_SERVICE_ACCOUNT;
+    if (envConfig) {
+        try {
+            serviceAccount = JSON.parse(envConfig);
+        } catch (err) {
+            console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT env var:', err.message);
+        }
+    }
+}
+
+if (!admin.apps.length && serviceAccount) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+    });
+}
+
+let db;
+try {
+    if (admin.apps.length > 0) {
+        db = admin.firestore();
+    }
+} catch (err) {
+    console.error('Firestore init error:', err.message);
+}
+
+module.exports = { admin, db };
