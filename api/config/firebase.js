@@ -14,26 +14,44 @@ if (fs.existsSync(localKeyPath)) {
     const envConfig = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (envConfig) {
         try {
-            // Clean up the string in case it's wrapped in extra quotes or has bad spacing
+            console.log('Attempting to parse FIREBASE_SERVICE_ACCOUNT...');
             let cleanJson = envConfig.trim();
 
-            // If it's wrapped in single quotes, strip them (common copy-paste error)
-            if (cleanJson.startsWith("'") && cleanJson.endsWith("'")) {
+            // Strip any surrounding quotes (single or double)
+            if ((cleanJson.startsWith("'") && cleanJson.endsWith("'")) ||
+                (cleanJson.startsWith('"') && cleanJson.endsWith('"'))) {
                 cleanJson = cleanJson.substring(1, cleanJson.length - 1);
             }
 
+            // Initial parse
             serviceAccount = JSON.parse(cleanJson);
 
-            // Ensure private_key is correctly formatted
-            if (serviceAccount.private_key) {
-                // Remove literal \n and replace with actual newlines if needed
-                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            // If the result is somehow still a string, parse it again (recursive parsing)
+            while (typeof serviceAccount === 'string') {
+                console.log('Result was a string, parsing again...');
+                serviceAccount = JSON.parse(serviceAccount);
             }
 
-            console.log('Firebase Service Account parsed successfully. Project ID:', serviceAccount.project_id);
+            if (serviceAccount && typeof serviceAccount === 'object') {
+                console.log('Parsed Keys:', Object.keys(serviceAccount));
+
+                // Fix private_key format if present
+                if (serviceAccount.private_key) {
+                    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+                }
+
+                if (serviceAccount.project_id) {
+                    console.log('Successfully identified Project ID:', serviceAccount.project_id);
+                } else {
+                    console.error('CRITICAL: project_id MISSING in parsed object!');
+                }
+            } else {
+                console.error('CRITICAL: Parsed result is NOT an object! Type:', typeof serviceAccount);
+            }
         } catch (err) {
-            console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT. Input length:', envConfig.length);
-            console.error('Parsing error:', err.message);
+            console.error('FAILED to parse FIREBASE_SERVICE_ACCOUNT JSON!');
+            console.error('Error:', err.message);
+            console.error('First 50 chars of input:', envConfig.substring(0, 50));
         }
     }
 }
