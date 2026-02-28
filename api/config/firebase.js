@@ -14,7 +14,15 @@ if (fs.existsSync(localKeyPath)) {
     const envConfig = process.env.FIREBASE_SERVICE_ACCOUNT;
     if (envConfig) {
         try {
-            serviceAccount = JSON.parse(envConfig);
+            // Vercel sometimes passes the JSON string with escaped newlines.
+            // We'll clean it up to ensure valid JSON parsing.
+            const cleanJson = envConfig.trim();
+            serviceAccount = JSON.parse(cleanJson);
+
+            // Fix double-escaped newlines in private_key if they exist
+            if (serviceAccount.private_key) {
+                serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            }
         } catch (err) {
             console.error('Failed to parse FIREBASE_SERVICE_ACCOUNT env var:', err.message);
         }

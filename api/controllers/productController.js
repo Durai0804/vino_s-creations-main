@@ -58,6 +58,9 @@ async function deleteImage(imageUrl) {
 // GET all products
 exports.getAllProducts = async (req, res) => {
     try {
+        if (!db) {
+            return res.status(503).json({ error: 'Database not initialized. Please check FIREBASE_SERVICE_ACCOUNT in your Vercel settings.' });
+        }
         const snapshot = await db.collection(COLLECTION).orderBy('created_at', 'desc').get();
         const products = snapshot.docs.map(doc => ({
             id: doc.id,
