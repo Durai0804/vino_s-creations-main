@@ -44,13 +44,18 @@ export default function ProductCard({ product, index }: ProductCardProps) {
                             }`}
                         />
                         {/* Size badge */}
-                        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium
+                        <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
               ${isDark
                                 ? 'bg-charcoal/80 text-gold backdrop-blur-sm'
                                 : 'bg-white/80 text-gold backdrop-blur-sm'
                             }`}>
                             {product.size}
                         </div>
+                        {product.image_urls && product.image_urls.length > 1 && (
+                            <div className="absolute bottom-3 left-3 px-2 py-0.5 rounded-full text-[10px] bg-gold text-charcoal font-bold shadow-lg">
+                                {product.image_urls.length} PHOTOS
+                            </div>
+                        )}
                     </div>
 
                     {/* Content */}

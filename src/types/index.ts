@@ -4,7 +4,8 @@ export interface Product {
     description: string;
     size: string;
     price?: string;
-    image_url: string;
+    image_url: string; // Maintain for thumbnail
+    image_urls?: string[]; // Array of all images
     material?: string;
     usage_suggestion?: string;
     created_at: string;
@@ -18,7 +19,8 @@ export interface ProductFormData {
     price?: string;
     material?: string;
     usage_suggestion?: string;
-    image?: File | null;
+    images?: File[]; // Array of new files
+    existing_image_urls?: string[]; // For updates
 }
 
 export interface AdminUser {

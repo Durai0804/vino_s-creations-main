@@ -10,7 +10,10 @@ export default function ProductDetailPage() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const { product, loading, error } = useProduct(id!);
+    const [activeImageIndex, setActiveImageIndex] = useState(0);
     const [imageZoomed, setImageZoomed] = useState(false);
+
+    const images = product?.image_urls || (product?.image_url ? [product.image_url] : []);
 
     if (loading) {
         return (
@@ -71,28 +74,48 @@ export default function ProductDetailPage() {
                 </motion.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-                    {/* Image */}
+                    {/* Image Gallery */}
                     <motion.div
                         initial={{ opacity: 0, x: -40 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6 }}
-                        className="relative"
+                        className="space-y-4"
                     >
                         <div
-                            className={`relative rounded-2xl overflow-hidden cursor-zoom-in
+                            className={`relative rounded-2xl overflow-hidden
                 ${isDark ? 'bg-dark-card' : 'bg-white'}
                 ${imageZoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
                             onClick={() => setImageZoomed(!imageZoomed)}
                         >
                             <motion.img
-                                src={product.image_url}
+                                key={images[activeImageIndex]}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1, scale: imageZoomed ? 1.5 : 1 }}
+                                src={images[activeImageIndex]}
                                 alt={product.name}
                                 className="w-full aspect-square object-cover"
-                                animate={{ scale: imageZoomed ? 1.5 : 1 }}
+                                style={{ transformOrigin: 'center' }}
                                 transition={{ duration: 0.5, ease: 'easeInOut' }}
                             />
                         </div>
-                        <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-full blur-2xl
+
+                        {images.length > 1 && (
+                            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                                {images.map((url, idx) => (
+                                    <motion.button
+                                        key={url}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => { setActiveImageIndex(idx); setImageZoomed(false); }}
+                                        className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-300
+                                          ${activeImageIndex === idx ? 'border-gold' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                    >
+                                        <img src={url} className="w-full h-full object-cover" />
+                                    </motion.button>
+                                ))}
+                            </div>
+                        )}
+                        <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-full blur-2xl -z-10
               ${isDark ? 'bg-gold-muted/10' : 'bg-gold/10'}`} />
                     </motion.div>
 
@@ -124,7 +147,7 @@ export default function ProductDetailPage() {
                                 <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm
                     ${isDark ? 'bg-dark-card border border-dark-border text-dark-text/70' : 'bg-beige border border-beige-dark/30 text-light-text'}`}>
                                     <Ruler size={14} className="text-gold" />
-                                    {product.size} inches
+                                    {product.size}
                                 </div>
                                 {product.material && (
                                     <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm

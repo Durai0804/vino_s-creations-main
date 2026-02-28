@@ -33,7 +33,12 @@ export const productService = {
         if (formData.price) body.append('price', formData.price);
         if (formData.material) body.append('material', formData.material);
         if (formData.usage_suggestion) body.append('usage_suggestion', formData.usage_suggestion);
-        if (formData.image) body.append('image', formData.image);
+
+        if (formData.images && formData.images.length > 0) {
+            formData.images.forEach(image => {
+                body.append('images', image);
+            });
+        }
 
         const res = await fetch(`${API_BASE}/products`, {
             method: 'POST',
@@ -66,7 +71,18 @@ export const productService = {
         if (formData.price) body.append('price', formData.price);
         if (formData.material) body.append('material', formData.material);
         if (formData.usage_suggestion) body.append('usage_suggestion', formData.usage_suggestion);
-        if (formData.image) body.append('image', formData.image);
+
+        if (formData.images && formData.images.length > 0) {
+            formData.images.forEach(image => {
+                body.append('images', image);
+            });
+        }
+
+        if (formData.existing_image_urls) {
+            formData.existing_image_urls.forEach(url => {
+                body.append('existing_image_urls', url);
+            });
+        }
 
         const res = await fetch(`${API_BASE}/products/${id}`, {
             method: 'PUT',

@@ -7,7 +7,7 @@ import SkeletonCard from '../../components/ui/SkeletonCard';
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const SIZES = ['All', '6x6', '8x8', '10x10', '12x12'];
+
 
 export default function LandingPage() {
     const { theme } = useTheme();
@@ -209,7 +209,7 @@ export default function LandingPage() {
                             {[
                                 { icon: Sparkles, title: 'Premium Quality', desc: 'Durable, reusable stencils crafted with precision' },
                                 { icon: Palette, title: 'Authentic Designs', desc: 'Traditional patterns with a modern touch' },
-                                { icon: Star, title: 'Multiple Sizes', desc: 'From compact 6x6 to grand 12x12 inches' },
+                                { icon: Star, title: 'Various Sizes', desc: 'Available in custom dimensions to suit your space' },
                                 { icon: Sparkles, title: 'Easy to Use', desc: 'Perfect results every single time' },
                             ].map((item, i) => (
                                 <motion.div
@@ -296,7 +296,7 @@ export default function LandingPage() {
 
                         {/* Size filter */}
                         <div className="flex items-center gap-2 flex-wrap justify-center">
-                            {SIZES.map((size) => (
+                            {['All', ...new Set(products.map(p => p.size))].map((size) => (
                                 <motion.button
                                     key={size}
                                     whileHover={{ scale: 1.05 }}

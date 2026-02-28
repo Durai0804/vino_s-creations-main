@@ -8,8 +8,6 @@ import { productService } from '../../services/api';
 import type { Product, ProductFormData } from '../../types';
 import { useNavigate } from 'react-router-dom';
 
-const SIZES = ['6x6', '8x8', '10x10', '12x12'];
-
 export default function AdminDashboard() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -27,15 +25,25 @@ export default function AdminDashboard() {
     const [formData, setFormData] = useState<ProductFormData>({
         name: '',
         description: '',
-        size: '6x6',
+        size: '',
         price: '',
         material: '',
         usage_suggestion: '',
-        image: null,
+        images: [],
+        existing_image_urls: []
     });
 
     const resetForm = () => {
-        setFormData({ name: '', description: '', size: '6x6', price: '', material: '', usage_suggestion: '', image: null });
+        setFormData({
+            name: '',
+            description: '',
+            size: '',
+            price: '',
+            material: '',
+            usage_suggestion: '',
+            images: [],
+            existing_image_urls: []
+        });
         setEditingProduct(null);
         setShowForm(false);
         setFormError('');
@@ -50,7 +58,8 @@ export default function AdminDashboard() {
             price: product.price || '',
             material: product.material || '',
             usage_suggestion: product.usage_suggestion || '',
-            image: null,
+            images: [],
+            existing_image_urls: product.image_urls || [product.image_url],
         });
         setShowForm(true);
     };
@@ -64,8 +73,8 @@ export default function AdminDashboard() {
             if (editingProduct) {
                 await productService.update(editingProduct.id, formData);
             } else {
-                if (!formData.image) {
-                    setFormError('Please select an image');
+                if (!formData.images || formData.images.length === 0) {
+                    setFormError('Please select at least one image');
                     setFormLoading(false);
                     return;
                 }
@@ -78,6 +87,30 @@ export default function AdminDashboard() {
         } finally {
             setFormLoading(false);
         }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            setFormData(prev => ({
+                ...prev,
+                images: [...(prev.images || []), ...files]
+            }));
+        }
+    };
+
+    const removeNewImage = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            images: (prev.images || []).filter((_, i) => i !== index)
+        }));
+    };
+
+    const removeExistingImage = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            existing_image_urls: (prev.existing_image_urls || []).filter((_, i) => i !== index)
+        }));
     };
 
     const handleDelete = async (id: string) => {
@@ -116,7 +149,7 @@ export default function AdminDashboard() {
                         <motion.button
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => { setEditingProduct(null); setShowForm(true); }}
+                            onClick={() => { resetForm(); setShowForm(true); }}
                             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold
                 bg-gradient-to-r from-gold to-gold-muted text-charcoal
                 hover:shadow-[0_4px_20px_rgba(212,168,83,0.3)] transition-all duration-300 shadow-lg shadow-gold/10"
@@ -144,8 +177,8 @@ export default function AdminDashboard() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
                     {[
                         { icon: Package, label: 'Total Products', value: products.length },
-                        { icon: BarChart3, label: 'Sizes Available', value: [...new Set(products.map(p => p.size))].length },
-                        { icon: Package, label: 'Latest Added', value: products.length > 0 ? new Date(products[products.length - 1]?.created_at).toLocaleDateString() : 'N/A' },
+                        { icon: BarChart3, label: 'Categories', value: [...new Set(products.map(p => p.size))].length },
+                        { icon: Package, label: 'Latest Added', value: products.length > 0 ? new Date(products[0]?.created_at).toLocaleDateString() : 'N/A' },
                     ].map((stat) => (
                         <motion.div
                             key={stat.label}
@@ -157,11 +190,11 @@ export default function AdminDashboard() {
                         >
                             <div className="flex items-center gap-3">
                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center
-                  ${isDark ? 'bg-gold-muted/10 text-gold' : 'bg-gold/10 text-gold'}`}>
+                                  ${isDark ? 'bg-gold-muted/10 text-gold' : 'bg-gold/10 text-gold'}`}>
                                     <stat.icon size={20} />
                                 </div>
-                                <div>
-                                    <p className={`text-xs uppercase tracking-wider ${isDark ? 'text-dark-text/40' : 'text-light-text/50'}`}>
+                                <div className="min-w-0">
+                                    <p className={`text-xs uppercase tracking-wider truncate ${isDark ? 'text-dark-text/40' : 'text-light-text/50'}`}>
                                         {stat.label}
                                     </p>
                                     <p className={`text-lg font-semibold ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
@@ -192,7 +225,7 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Products Table/Cards */}
+                {/* Products Grid */}
                 {loading ? (
                     <div className="text-center py-20">
                         <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto" />
@@ -212,8 +245,8 @@ export default function AdminDashboard() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: i * 0.05 }}
-                                className={`rounded-2xl overflow-hidden group
-                  ${isDark ? 'bg-dark-card border border-dark-border' : 'bg-white border border-beige-dark/20'}`}
+                                className={`rounded-2xl overflow-hidden group relative
+                                  ${isDark ? 'bg-dark-card border border-dark-border' : 'bg-white border border-beige-dark/20'}`}
                             >
                                 <div className="relative aspect-square overflow-hidden">
                                     <img
@@ -223,9 +256,9 @@ export default function AdminDashboard() {
                                         className="w-full h-full object-cover"
                                     />
                                     <div className={`absolute inset-0 flex items-center justify-center gap-3
-                    transition-opacity duration-300
-                    md:opacity-0 md:group-hover:opacity-100
-                    ${isDark ? 'bg-charcoal/70' : 'bg-black/40'}`}>
+                                    transition-opacity duration-300
+                                    md:opacity-0 md:group-hover:opacity-100
+                                    ${isDark ? 'bg-charcoal/70' : 'bg-black/40'}`}>
                                         <motion.button
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.9 }}
@@ -243,10 +276,15 @@ export default function AdminDashboard() {
                                             <Trash2 size={18} />
                                         </motion.button>
                                     </div>
-                                    <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs
+                                    <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
                     ${isDark ? 'bg-charcoal/80 text-gold' : 'bg-white/80 text-gold'}`}>
                                         {product.size}
                                     </div>
+                                    {(product.image_urls && product.image_urls.length > 1) && (
+                                        <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full text-[10px] bg-gold text-charcoal font-bold">
+                                            {product.image_urls.length} Photos
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="p-4">
                                     <h3 className={`font-serif text-sm font-semibold mb-1 truncate
@@ -290,7 +328,7 @@ export default function AdminDashboard() {
                                 <button
                                     onClick={resetForm}
                                     className={`p-2 rounded-full hover:bg-opacity-10 transition-colors
-                    ${isDark ? 'text-dark-text/40 hover:text-dark-text' : 'text-light-text/40 hover:text-charcoal'}`}
+                                    ${isDark ? 'text-dark-text/40 hover:text-dark-text' : 'text-light-text/40 hover:text-charcoal'}`}
                                 >
                                     <X size={20} />
                                 </button>
@@ -307,7 +345,7 @@ export default function AdminDashboard() {
                                 {/* Name */}
                                 <div>
                                     <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
-                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
+                                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
                                         Product Name *
                                     </label>
                                     <input
@@ -317,43 +355,37 @@ export default function AdminDashboard() {
                                         required
                                         placeholder="e.g. Traditional Lotus Kolam"
                                         className={`w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-300
-                      ${isDark
+                                          ${isDark
                                                 ? 'bg-dark-card border border-dark-border text-dark-text placeholder:text-dark-text/25 focus:border-gold-muted/50'
                                                 : 'bg-beige/50 border border-beige-dark/30 text-charcoal placeholder:text-light-text/30 focus:border-gold/50'
                                             }`}
                                     />
                                 </div>
 
-                                {/* Size */}
+                                {/* Size (User Given) */}
                                 <div>
                                     <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
-                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
-                                        Size *
+                                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
+                                        Size / Category *
                                     </label>
-                                    <div className="flex gap-2 flex-wrap">
-                                        {SIZES.map((size) => (
-                                            <button
-                                                key={size}
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, size })}
-                                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300
-                          ${formData.size === size
-                                                        ? 'bg-gradient-to-r from-gold to-gold-muted text-charcoal'
-                                                        : isDark
-                                                            ? 'bg-dark-card border border-dark-border text-dark-text/60'
-                                                            : 'bg-beige/50 border border-beige-dark/30 text-light-text/60'
-                                                    }`}
-                                            >
-                                                {size}
-                                            </button>
-                                        ))}
-                                    </div>
+                                    <input
+                                        type="text"
+                                        value={formData.size}
+                                        onChange={(e) => setFormData({ ...formData, size: e.target.value })}
+                                        required
+                                        placeholder="e.g. 10x10, Custom, Large..."
+                                        className={`w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-300
+                                          ${isDark
+                                                ? 'bg-dark-card border border-dark-border text-dark-text placeholder:text-dark-text/25 focus:border-gold-muted/50'
+                                                : 'bg-beige/50 border border-beige-dark/30 text-charcoal placeholder:text-light-text/30 focus:border-gold/50'
+                                            }`}
+                                    />
                                 </div>
 
                                 {/* Price */}
                                 <div>
                                     <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
-                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
+                                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
                                         Price (Optional)
                                     </label>
                                     <input
@@ -362,7 +394,7 @@ export default function AdminDashboard() {
                                         onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                                         placeholder="e.g. ₹499"
                                         className={`w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-300
-                       ${isDark
+                                           ${isDark
                                                 ? 'bg-dark-card border border-dark-border text-dark-text placeholder:text-dark-text/25 focus:border-gold-muted/50'
                                                 : 'bg-beige/50 border border-beige-dark/30 text-charcoal placeholder:text-light-text/30 focus:border-gold/50'
                                             }`}
@@ -372,7 +404,7 @@ export default function AdminDashboard() {
                                 {/* Description */}
                                 <div>
                                     <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
-                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
+                                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
                                         Description *
                                     </label>
                                     <textarea
@@ -382,71 +414,102 @@ export default function AdminDashboard() {
                                         rows={3}
                                         placeholder="Describe the kolam design..."
                                         className={`w-full px-4 py-3 rounded-xl text-sm outline-none resize-none transition-all duration-300
-                      ${isDark
+                                          ${isDark
                                                 ? 'bg-dark-card border border-dark-border text-dark-text placeholder:text-dark-text/25 focus:border-gold-muted/50'
                                                 : 'bg-beige/50 border border-beige-dark/30 text-charcoal placeholder:text-light-text/30 focus:border-gold/50'
                                             }`}
                                     />
                                 </div>
 
-                                {/* Material */}
-                                <div>
-                                    <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
-                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
-                                        Material
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.material || ''}
-                                        onChange={(e) => setFormData({ ...formData, material: e.target.value })}
-                                        placeholder="e.g. PVC, Acrylic"
-                                        className={`w-full px-4 py-3 rounded-xl text-sm outline-none transition-all duration-300
-                      ${isDark
-                                                ? 'bg-dark-card border border-dark-border text-dark-text placeholder:text-dark-text/25 focus:border-gold-muted/50'
-                                                : 'bg-beige/50 border border-beige-dark/30 text-charcoal placeholder:text-light-text/30 focus:border-gold/50'
-                                            }`}
-                                    />
+                                {/* Material & Usage */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
+                                        ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
+                                            Material
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.material || ''}
+                                            onChange={(e) => setFormData({ ...formData, material: e.target.value })}
+                                            placeholder="e.g. PVC"
+                                            className={`w-full px-4 py-3 rounded-xl text-sm outline-none
+                                              ${isDark ? 'bg-dark-card border border-dark-border' : 'bg-beige/50 border border-beige-dark/30'}`}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
+                                        ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
+                                            Usage
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.usage_suggestion || ''}
+                                            onChange={(e) => setFormData({ ...formData, usage_suggestion: e.target.value })}
+                                            placeholder="e.g. Indoor"
+                                            className={`w-full px-4 py-3 rounded-xl text-sm outline-none
+                                              ${isDark ? 'bg-dark-card border border-dark-border' : 'bg-beige/50 border border-beige-dark/30'}`}
+                                        />
+                                    </div>
                                 </div>
 
-                                {/* Usage Suggestion */}
-                                <div>
-                                    <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
-                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
-                                        Usage Suggestion
+                                {/* Photo Gallery Management */}
+                                <div className="space-y-3">
+                                    <label className={`block text-xs font-medium uppercase tracking-wider
+                                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
+                                        Photo Gallery {!editingProduct && '*'}
                                     </label>
-                                    <textarea
-                                        value={formData.usage_suggestion || ''}
-                                        onChange={(e) => setFormData({ ...formData, usage_suggestion: e.target.value })}
-                                        rows={2}
-                                        placeholder="How to best use this stencil..."
-                                        className={`w-full px-4 py-3 rounded-xl text-sm outline-none resize-none transition-all duration-300
-                      ${isDark
-                                                ? 'bg-dark-card border border-dark-border text-dark-text placeholder:text-dark-text/25 focus:border-gold-muted/50'
-                                                : 'bg-beige/50 border border-beige-dark/30 text-charcoal placeholder:text-light-text/30 focus:border-gold/50'
-                                            }`}
-                                    />
-                                </div>
 
-                                {/* Image Upload */}
-                                <div>
-                                    <label className={`block text-xs font-medium uppercase tracking-wider mb-1.5
-                    ${isDark ? 'text-dark-text/60' : 'text-light-text/60'}`}>
-                                        Product Image {!editingProduct && '*'}
-                                    </label>
-                                    <label className={`flex flex-col items-center justify-center w-full h-32 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-300
-                    ${formData.image
-                                            ? isDark ? 'border-gold-muted/50 bg-gold-muted/5' : 'border-gold/50 bg-gold/5'
-                                            : isDark ? 'border-dark-border hover:border-gold-muted/30' : 'border-beige-dark/30 hover:border-gold/30'
-                                        }`}>
-                                        <Upload size={24} className={`mb-2 ${isDark ? 'text-dark-text/30' : 'text-light-text/30'}`} />
-                                        <span className={`text-xs ${isDark ? 'text-dark-text/40' : 'text-light-text/40'}`}>
-                                            {formData.image ? formData.image.name : 'Click to upload image'}
+                                    {/* Existing Images (Edit mode) */}
+                                    {formData.existing_image_urls && formData.existing_image_urls.length > 0 && (
+                                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 mb-3">
+                                            {formData.existing_image_urls.map((url, idx) => (
+                                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gold/20 bg-charcoal/20">
+                                                    <img src={url} className="w-full h-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExistingImage(idx)}
+                                                        className="absolute top-0.5 right-0.5 p-1 bg-red-500 text-white rounded-full transition-transform hover:scale-110 shadow-md"
+                                                    >
+                                                        <X size={10} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {/* New Images Preview */}
+                                    {formData.images && formData.images.length > 0 && (
+                                        <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 mb-3">
+                                            {formData.images.map((file, idx) => (
+                                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-gold/50 bg-gold/10 flex items-center justify-center">
+                                                    <div className="text-[10px] text-center p-1 break-all overflow-hidden text-gold font-bold">
+                                                        {file.name.substring(0, 8)}...
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeNewImage(idx)}
+                                                        className="absolute top-0.5 right-0.5 p-1 bg-charcoal text-white rounded-full shadow-md"
+                                                    >
+                                                        <X size={10} />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <label className={`flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-300
+                                    ${isDark ? 'border-dark-border hover:border-gold-muted/30 hover:bg-gold-muted/5' : 'border-beige-dark/30 hover:border-gold/30 hover:bg-gold/5'}`}>
+                                        <Upload size={20} className={`mb-1 ${isDark ? 'text-dark-text/30' : 'text-light-text/30'}`} />
+                                        <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-dark-text/40' : 'text-light-text/40'}`}>
+                                            Add Photos
                                         </span>
                                         <input
                                             type="file"
+                                            multiple
                                             accept="image/*"
                                             className="hidden"
-                                            onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
+                                            onChange={handleFileChange}
                                         />
                                     </label>
                                 </div>
@@ -458,13 +521,13 @@ export default function AdminDashboard() {
                                     whileHover={{ scale: formLoading ? 1 : 1.02 }}
                                     whileTap={{ scale: formLoading ? 1 : 0.98 }}
                                     className={`w-full py-3.5 rounded-xl text-sm font-semibold uppercase tracking-wider transition-all duration-300
-                    ${formLoading ? 'opacity-60 cursor-not-allowed' : ''}
-                    bg-gradient-to-r from-gold to-gold-muted text-charcoal`}
+                                    ${formLoading ? 'opacity-60 cursor-not-allowed' : ''}
+                                    bg-gradient-to-r from-gold to-gold-muted text-charcoal shadow-lg shadow-gold/10`}
                                 >
                                     {formLoading ? (
                                         <span className="flex items-center justify-center gap-2">
                                             <div className="w-4 h-4 border-2 border-charcoal/30 border-t-charcoal rounded-full animate-spin" />
-                                            {editingProduct ? 'Updating...' : 'Creating...'}
+                                            Saving...
                                         </span>
                                     ) : (
                                         <span className="flex items-center justify-center gap-2">

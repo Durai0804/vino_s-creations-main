@@ -23,8 +23,8 @@ router.get('/', productController.getAllProducts);
 router.get('/:id', productController.getProductById);
 
 // Protected routes (admin only)
-router.post('/', authMiddleware, upload.single('image'), productController.createProduct);
-router.put('/:id', authMiddleware, upload.single('image'), productController.updateProduct);
+router.post('/', authMiddleware, upload.array('images', 5), productController.createProduct);
+router.put('/:id', authMiddleware, upload.array('images', 5), productController.updateProduct);
 router.delete('/:id', authMiddleware, productController.deleteProduct);
 
 module.exports = router;
