@@ -448,21 +448,7 @@ export default function LandingPage() {
                                         </p>
 
                                         {/* Author */}
-                                        <div className="flex items-center gap-3">
-                                            {testimonial.image_url ? (
-                                                <img
-                                                    src={testimonial.image_url}
-                                                    alt={testimonial.name}
-                                                    className="w-10 h-10 rounded-full object-cover border border-gold/20"
-                                                />
-                                            ) : (
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold uppercase
-                                                    ${isDark
-                                                        ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
-                                                        : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
-                                                    {testimonial.name.charAt(0)}
-                                                </div>
-                                            )}
+                                        <div className="flex items-center justify-between gap-3">
                                             <div>
                                                 <h4 className={`text-sm font-semibold
                                                     ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
@@ -475,6 +461,20 @@ export default function LandingPage() {
                                                     </p>
                                                 )}
                                             </div>
+                                            {testimonial.image_url ? (
+                                                <img
+                                                    src={testimonial.image_url}
+                                                    alt={testimonial.name}
+                                                    className="w-10 h-10 rounded-full object-cover border border-gold/20"
+                                                />
+                                            ) : (
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold uppercase shrink-0
+                                                    ${isDark
+                                                        ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
+                                                        : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
+                                                    {testimonial.name.charAt(0)}
+                                                </div>
+                                            )}
                                         </div>
                                     </motion.div>
                                 ))}
@@ -577,21 +577,7 @@ export default function LandingPage() {
                                     "{selectedTestimonial.content}"
                                 </p>
 
-                                <div className="flex items-center gap-4 border-t pt-8 border-gold/10">
-                                    {selectedTestimonial.image_url ? (
-                                        <img
-                                            src={selectedTestimonial.image_url}
-                                            alt={selectedTestimonial.name}
-                                            className="w-14 h-14 rounded-full object-cover border-2 border-gold/20"
-                                        />
-                                    ) : (
-                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold uppercase
-                                            ${isDark
-                                                ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
-                                                : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
-                                            {selectedTestimonial.name.charAt(0)}
-                                        </div>
-                                    )}
+                                <div className="flex items-center justify-between gap-4 border-t pt-8 border-gold/10">
                                     <div>
                                         <h4 className={`text-lg font-semibold
                                             ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
@@ -604,6 +590,20 @@ export default function LandingPage() {
                                             </p>
                                         )}
                                     </div>
+                                    {selectedTestimonial.image_url ? (
+                                        <img
+                                            src={selectedTestimonial.image_url}
+                                            alt={selectedTestimonial.name}
+                                            className="w-14 h-14 rounded-full object-cover border-2 border-gold/20"
+                                        />
+                                    ) : (
+                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold uppercase shrink-0
+                                            ${isDark
+                                                ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
+                                                : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
+                                            {selectedTestimonial.name.charAt(0)}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </motion.div>
