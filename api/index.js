@@ -7,6 +7,7 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 const productRoutes = require('./routes/products');
+const testimonialRoutes = require('./routes/testimonials');
 
 const path = require('path');
 
@@ -25,6 +26,7 @@ app.use(express.json());
 
 // Routes
 app.use('/api/products', productRoutes);
+app.use('/api/testimonials', testimonialRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

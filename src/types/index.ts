@@ -28,3 +28,21 @@ export interface AdminUser {
     email: string;
     displayName?: string;
 }
+
+export interface Testimonial {
+    id: string;
+    name: string;
+    role?: string;
+    content: string;
+    rating: number;
+    image_url?: string;
+    created_at: string;
+}
+
+export interface TestimonialFormData {
+    name: string;
+    role?: string;
+    content: string;
+    rating: number;
+    image?: File | null;
+}

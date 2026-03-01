@@ -1,4 +1,4 @@
-import type { Product, ProductFormData } from '../types';
+import type { Product, ProductFormData, Testimonial, TestimonialFormData } from '../types';
 
 
 const API_BASE = (import.meta.env.VITE_API_BASE as string) || '/api';
@@ -114,6 +114,52 @@ export const productService = {
         if (!res.ok) {
             const err = await res.json();
             throw new Error(err.error || 'Failed to delete product');
+        }
+    },
+};
+
+export const testimonialService = {
+    async getAll(): Promise<Testimonial[]> {
+        const res = await fetch(`${API_BASE}/testimonials`);
+        if (!res.ok) throw new Error('Failed to fetch testimonials');
+        const data = await res.json();
+        return data.testimonials;
+    },
+
+    async create(formData: TestimonialFormData): Promise<Testimonial> {
+        const authHeaders = await getAuthHeaders();
+        const body = new FormData();
+
+        body.append('name', formData.name);
+        body.append('content', formData.content);
+        body.append('rating', String(formData.rating));
+        if (formData.role) body.append('role', formData.role);
+        if (formData.image) body.append('image', formData.image);
+
+        const res = await fetch(`${API_BASE}/testimonials`, {
+            method: 'POST',
+            headers: authHeaders,
+            body,
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Failed to create testimonial');
+        }
+        const data = await res.json();
+        return data.testimonial;
+    },
+
+    async delete(id: string): Promise<void> {
+        const authHeaders = await getAuthHeaders();
+        const res = await fetch(`${API_BASE}/testimonials/${id}`, {
+            method: 'DELETE',
+            headers: { ...authHeaders },
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Failed to delete testimonial');
         }
     },
 };

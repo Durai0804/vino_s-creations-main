@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
-import { ArrowDown, Sparkles, Star, Palette } from 'lucide-react';
+import { ArrowDown, Sparkles, Star, Palette, Quote, MessageCircle } from 'lucide-react';
+import { useTestimonials } from '../../hooks/useTestimonials';
 import { useTheme } from '../../context/ThemeContext';
 import { useProducts } from '../../hooks/useProducts';
 import ProductCard from '../../components/ui/ProductCard';
@@ -14,6 +15,7 @@ export default function LandingPage() {
     const isDark = theme === 'dark';
     const location = useLocation();
     const { products, loading } = useProducts();
+    const { testimonials, loading: testimonialsLoading } = useTestimonials();
     const [sizeFilter, setSizeFilter] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -343,6 +345,126 @@ export default function LandingPage() {
                                 Try adjusting your search or filter
                             </p>
                         </motion.div>
+                    )}
+                </div>
+            </section>
+
+            {/* ===== CUSTOMER TESTIMONIALS SECTION ===== */}
+            <section id="testimonials" className={`py-24 sm:py-32 ${isDark ? 'bg-dark-surface' : 'bg-beige/30'}`}>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Section Header */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.6 }}
+                        className="text-center mb-16"
+                    >
+                        <span className={`inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest mb-4
+                            ${isDark ? 'text-gold' : 'text-gold'}`}>
+                            <MessageCircle size={14} />
+                            What Our Customers Say
+                        </span>
+                        <h2 className={`font-serif text-3xl sm:text-4xl md:text-5xl font-bold mb-4
+                            ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
+                            Customer <span className="text-gradient">Testimonials</span>
+                        </h2>
+                        <p className={`text-base max-w-xl mx-auto
+                            ${isDark ? 'text-dark-text/50' : 'text-light-text/60'}`}>
+                            Hear from our happy customers who have experienced the beauty
+                            of our handcrafted kolam stencils.
+                        </p>
+                    </motion.div>
+
+                    {/* Testimonials Grid */}
+                    {testimonialsLoading ? (
+                        <div className="text-center py-16">
+                            <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto" />
+                        </div>
+                    ) : testimonials.length === 0 ? (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-center py-16"
+                        >
+                            <MessageCircle size={48} className={`mx-auto mb-4 ${isDark ? 'text-dark-border' : 'text-beige-dark'}`} />
+                            <p className={`font-serif text-xl ${isDark ? 'text-dark-text/40' : 'text-light-text/40'}`}>
+                                No testimonials yet
+                            </p>
+                        </motion.div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {testimonials.map((testimonial, i) => (
+                                <motion.div
+                                    key={testimonial.id}
+                                    initial={{ opacity: 0, y: 30 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true }}
+                                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                                    whileHover={{ y: -6, transition: { duration: 0.3 } }}
+                                    className={`relative p-6 sm:p-8 rounded-2xl transition-all duration-300 group
+                                        ${isDark
+                                            ? 'bg-dark-card border border-dark-border hover:border-gold-muted/30 hover:shadow-[0_8px_30px_rgba(212,168,83,0.08)]'
+                                            : 'bg-white border border-beige-dark/20 hover:border-gold/30 hover:shadow-[0_8px_30px_rgba(212,168,83,0.1)]'
+                                        }`}
+                                >
+                                    {/* Decorative quote icon */}
+                                    <div className={`absolute top-4 right-4 transition-all duration-300
+                                        ${isDark ? 'text-gold-muted/10 group-hover:text-gold-muted/20' : 'text-gold/10 group-hover:text-gold/20'}`}>
+                                        <Quote size={40} />
+                                    </div>
+
+                                    {/* Star Rating */}
+                                    <div className="flex items-center gap-1 mb-4">
+                                        {Array.from({ length: 5 }).map((_, starIdx) => (
+                                            <Star
+                                                key={starIdx}
+                                                size={16}
+                                                className={starIdx < testimonial.rating
+                                                    ? 'text-gold fill-gold'
+                                                    : isDark ? 'text-dark-border' : 'text-beige-dark/40'}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {/* Content */}
+                                    <p className={`text-sm leading-relaxed mb-6 relative z-10
+                                        ${isDark ? 'text-dark-text/70' : 'text-light-text/70'}`}>
+                                        "{testimonial.content}"
+                                    </p>
+
+                                    {/* Author */}
+                                    <div className="flex items-center gap-3">
+                                        {testimonial.image_url ? (
+                                            <img
+                                                src={testimonial.image_url}
+                                                alt={testimonial.name}
+                                                className="w-10 h-10 rounded-full object-cover border border-gold/20"
+                                            />
+                                        ) : (
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold uppercase
+                                                ${isDark
+                                                    ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
+                                                    : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
+                                                {testimonial.name.charAt(0)}
+                                            </div>
+                                        )}
+                                        <div>
+                                            <h4 className={`text-sm font-semibold
+                                                ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
+                                                {testimonial.name}
+                                            </h4>
+                                            {testimonial.role && (
+                                                <p className={`text-xs
+                                                    ${isDark ? 'text-dark-text/40' : 'text-light-text/50'}`}>
+                                                    {testimonial.role}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
                     )}
                 </div>
             </section>
