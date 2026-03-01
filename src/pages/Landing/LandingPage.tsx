@@ -416,40 +416,37 @@ export default function LandingPage() {
                                         transition={{ duration: 0.5, delay: i * 0.1 }}
                                         whileHover={{ y: -6, transition: { duration: 0.3 } }}
                                         onClick={() => setSelectedTestimonial(testimonial)}
-                                        className={`relative p-6 sm:p-8 rounded-2xl transition-all duration-300 group cursor-pointer
+                                        className={`relative overflow-hidden rounded-2xl transition-all duration-300 group cursor-pointer flex min-h-[220px]
                                             ${isDark
                                                 ? 'bg-dark-card border border-dark-border hover:border-gold-muted/30 hover:shadow-[0_8px_30px_rgba(212,168,83,0.08)]'
                                                 : 'bg-white border border-beige-dark/20 hover:border-gold/30 hover:shadow-[0_8px_30px_rgba(212,168,83,0.1)]'
                                             }`}
                                     >
-                                        {/* Decorative quote icon */}
-                                        <div className={`absolute top-4 right-4 transition-all duration-300
-                                            ${isDark ? 'text-gold-muted/10 group-hover:text-gold-muted/20' : 'text-gold/10 group-hover:text-gold/20'}`}>
-                                            <Quote size={40} />
-                                        </div>
-
-                                        {/* Star Rating */}
-                                        <div className="flex items-center gap-1 mb-4">
-                                            {Array.from({ length: 5 }).map((_, starIdx) => (
-                                                <Star
-                                                    key={starIdx}
-                                                    size={16}
-                                                    className={starIdx < testimonial.rating
-                                                        ? 'text-gold fill-gold'
-                                                        : isDark ? 'text-dark-border' : 'text-beige-dark/40'}
-                                                />
-                                            ))}
-                                        </div>
-
-                                        {/* Content */}
-                                        <p className={`text-sm leading-relaxed mb-6 relative z-10 line-clamp-4
-                                            ${isDark ? 'text-dark-text/70' : 'text-light-text/70'}`}>
-                                            "{testimonial.content}"
-                                        </p>
-
-                                        {/* Author */}
-                                        <div className="flex items-center justify-between gap-3">
+                                        {/* Content Side */}
+                                        <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between relative z-10">
                                             <div>
+                                                {/* Star Rating */}
+                                                <div className="flex items-center gap-1 mb-3">
+                                                    {Array.from({ length: 5 }).map((_, starIdx) => (
+                                                        <Star
+                                                            key={starIdx}
+                                                            size={14}
+                                                            className={starIdx < testimonial.rating
+                                                                ? 'text-gold fill-gold'
+                                                                : isDark ? 'text-dark-border' : 'text-beige-dark/40'}
+                                                        />
+                                                    ))}
+                                                </div>
+
+                                                {/* Content */}
+                                                <p className={`text-sm leading-relaxed mb-4 line-clamp-4
+                                                    ${isDark ? 'text-dark-text/70' : 'text-light-text/70'}`}>
+                                                    "{testimonial.content}"
+                                                </p>
+                                            </div>
+
+                                            {/* Author */}
+                                            <div className="pt-2 border-t border-gold/5">
                                                 <h4 className={`text-sm font-semibold
                                                     ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
                                                     {testimonial.name}
@@ -461,20 +458,26 @@ export default function LandingPage() {
                                                     </p>
                                                 )}
                                             </div>
+                                        </div>
+
+                                        {/* Image Side - Impact Layout */}
+                                        <div className="w-[100px] sm:w-[130px] relative shrink-0 overflow-hidden border-l border-gold/10">
                                             {testimonial.image_url ? (
                                                 <img
                                                     src={testimonial.image_url}
                                                     alt={testimonial.name}
-                                                    className="w-10 h-10 rounded-full object-cover border border-gold/20"
+                                                    className="absolute inset-0 w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
                                                 />
                                             ) : (
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold uppercase shrink-0
+                                                <div className={`absolute inset-0 flex items-center justify-center text-2xl font-bold uppercase
                                                     ${isDark
-                                                        ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
-                                                        : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
+                                                        ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold'
+                                                        : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold'}`}>
                                                     {testimonial.name.charAt(0)}
                                                 </div>
                                             )}
+                                            {/* Overlay for better blending */}
+                                            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-black/5 pointer-events-none" />
                                         </div>
                                     </motion.div>
                                 ))}
@@ -557,53 +560,59 @@ export default function LandingPage() {
                                 <X size={20} />
                             </button>
 
-                            <div className="p-8 sm:p-12">
-                                <Quote size={48} className={`mb-8 ${isDark ? 'text-gold/20' : 'text-gold/20'}`} />
+                            <div className="flex flex-col md:flex-row h-full max-h-[90vh] md:max-h-none overflow-y-auto md:overflow-hidden">
+                                {/* Content Side */}
+                                <div className="flex-1 p-8 sm:p-12 md:pr-16 order-2 md:order-1">
+                                    <Quote size={48} className={`mb-8 ${isDark ? 'text-gold/20' : 'text-gold/20'}`} />
 
-                                <div className="flex items-center gap-1 mb-6">
-                                    {Array.from({ length: 5 }).map((_, starIdx) => (
-                                        <Star
-                                            key={starIdx}
-                                            size={20}
-                                            className={starIdx < selectedTestimonial.rating
-                                                ? 'text-gold fill-gold'
-                                                : isDark ? 'text-dark-border' : 'text-beige-dark/40'}
-                                        />
-                                    ))}
-                                </div>
+                                    <div className="flex items-center gap-1 mb-6">
+                                        {Array.from({ length: 5 }).map((_, starIdx) => (
+                                            <Star
+                                                key={starIdx}
+                                                size={20}
+                                                className={starIdx < selectedTestimonial.rating
+                                                    ? 'text-gold fill-gold'
+                                                    : isDark ? 'text-dark-border' : 'text-beige-dark/40'}
+                                            />
+                                        ))}
+                                    </div>
 
-                                <p className={`text-lg sm:text-xl font-serif italic leading-relaxed mb-10
-                                    ${isDark ? 'text-dark-text/90' : 'text-charcoal/90'}`}>
-                                    "{selectedTestimonial.content}"
-                                </p>
+                                    <p className={`text-lg sm:text-xl font-serif italic leading-relaxed mb-10
+                                        ${isDark ? 'text-dark-text/90' : 'text-charcoal/90'}`}>
+                                        "{selectedTestimonial.content}"
+                                    </p>
 
-                                <div className="flex items-center justify-between gap-4 border-t pt-8 border-gold/10">
-                                    <div>
-                                        <h4 className={`text-lg font-semibold
+                                    <div className="pt-8 border-t border-gold/10">
+                                        <h4 className={`text-xl font-semibold
                                             ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
                                             {selectedTestimonial.name}
                                         </h4>
                                         {selectedTestimonial.role && (
-                                            <p className={`text-sm
+                                            <p className={`text-base
                                                 ${isDark ? 'text-dark-text/40' : 'text-light-text/50'}`}>
                                                 {selectedTestimonial.role}
                                             </p>
                                         )}
                                     </div>
+                                </div>
+
+                                {/* Image Side - Visual Impact */}
+                                <div className="w-full md:w-[280px] lg:w-[320px] aspect-video md:aspect-auto relative shrink-0 order-1 md:order-2">
                                     {selectedTestimonial.image_url ? (
                                         <img
                                             src={selectedTestimonial.image_url}
                                             alt={selectedTestimonial.name}
-                                            className="w-14 h-14 rounded-full object-cover border-2 border-gold/20"
+                                            className="absolute inset-0 w-full h-full object-cover"
                                         />
                                     ) : (
-                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold uppercase shrink-0
+                                        <div className={`absolute inset-0 flex items-center justify-center text-6xl font-bold uppercase
                                             ${isDark
-                                                ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
-                                                : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
+                                                ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold'
+                                                : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold'}`}>
                                             {selectedTestimonial.name.charAt(0)}
                                         </div>
                                     )}
+                                    <div className="absolute inset-0 bg-gradient-to-b md:bg-gradient-to-l from-transparent to-black/20" />
                                 </div>
                             </div>
                         </motion.div>
