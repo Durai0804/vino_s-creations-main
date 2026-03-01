@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion';
-import { ArrowDown, Sparkles, Star, Palette, Quote, MessageCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowDown, Sparkles, Star, Palette, Quote, MessageCircle, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTestimonials } from '../../hooks/useTestimonials';
 import { useTheme } from '../../context/ThemeContext';
 import { useProducts } from '../../hooks/useProducts';
@@ -7,6 +7,7 @@ import ProductCard from '../../components/ui/ProductCard';
 import SkeletonCard from '../../components/ui/SkeletonCard';
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import type { Testimonial } from '../../types';
 
 
 
@@ -18,6 +19,17 @@ export default function LandingPage() {
     const { testimonials, loading: testimonialsLoading } = useTestimonials();
     const [sizeFilter, setSizeFilter] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
+    const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
+    const [testimonialPage, setTestimonialPage] = useState(0);
+    const testimonialsPerPage = 9;
+
+    const totalTestimonialPages = Math.ceil(testimonials.length / testimonialsPerPage);
+    const displayedTestimonials = useMemo(() => {
+        return testimonials.slice(
+            testimonialPage * testimonialsPerPage,
+            (testimonialPage + 1) * testimonialsPerPage
+        );
+    }, [testimonials, testimonialPage]);
 
     useEffect(() => {
         if (location.hash) {
@@ -393,81 +405,211 @@ export default function LandingPage() {
                             </p>
                         </motion.div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {testimonials.map((testimonial, i) => (
-                                <motion.div
-                                    key={testimonial.id}
-                                    initial={{ opacity: 0, y: 30 }}
-                                    whileInView={{ opacity: 1, y: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ duration: 0.5, delay: i * 0.1 }}
-                                    whileHover={{ y: -6, transition: { duration: 0.3 } }}
-                                    className={`relative p-6 sm:p-8 rounded-2xl transition-all duration-300 group
-                                        ${isDark
-                                            ? 'bg-dark-card border border-dark-border hover:border-gold-muted/30 hover:shadow-[0_8px_30px_rgba(212,168,83,0.08)]'
-                                            : 'bg-white border border-beige-dark/20 hover:border-gold/30 hover:shadow-[0_8px_30px_rgba(212,168,83,0.1)]'
-                                        }`}
-                                >
-                                    {/* Decorative quote icon */}
-                                    <div className={`absolute top-4 right-4 transition-all duration-300
-                                        ${isDark ? 'text-gold-muted/10 group-hover:text-gold-muted/20' : 'text-gold/10 group-hover:text-gold/20'}`}>
-                                        <Quote size={40} />
-                                    </div>
+                        <div className="space-y-12">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {displayedTestimonials.map((testimonial, i) => (
+                                    <motion.div
+                                        key={testimonial.id}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true }}
+                                        transition={{ duration: 0.5, delay: i * 0.1 }}
+                                        whileHover={{ y: -6, transition: { duration: 0.3 } }}
+                                        onClick={() => setSelectedTestimonial(testimonial)}
+                                        className={`relative p-6 sm:p-8 rounded-2xl transition-all duration-300 group cursor-pointer
+                                            ${isDark
+                                                ? 'bg-dark-card border border-dark-border hover:border-gold-muted/30 hover:shadow-[0_8px_30px_rgba(212,168,83,0.08)]'
+                                                : 'bg-white border border-beige-dark/20 hover:border-gold/30 hover:shadow-[0_8px_30px_rgba(212,168,83,0.1)]'
+                                            }`}
+                                    >
+                                        {/* Decorative quote icon */}
+                                        <div className={`absolute top-4 right-4 transition-all duration-300
+                                            ${isDark ? 'text-gold-muted/10 group-hover:text-gold-muted/20' : 'text-gold/10 group-hover:text-gold/20'}`}>
+                                            <Quote size={40} />
+                                        </div>
 
-                                    {/* Star Rating */}
-                                    <div className="flex items-center gap-1 mb-4">
-                                        {Array.from({ length: 5 }).map((_, starIdx) => (
-                                            <Star
-                                                key={starIdx}
-                                                size={16}
-                                                className={starIdx < testimonial.rating
-                                                    ? 'text-gold fill-gold'
-                                                    : isDark ? 'text-dark-border' : 'text-beige-dark/40'}
+                                        {/* Star Rating */}
+                                        <div className="flex items-center gap-1 mb-4">
+                                            {Array.from({ length: 5 }).map((_, starIdx) => (
+                                                <Star
+                                                    key={starIdx}
+                                                    size={16}
+                                                    className={starIdx < testimonial.rating
+                                                        ? 'text-gold fill-gold'
+                                                        : isDark ? 'text-dark-border' : 'text-beige-dark/40'}
+                                                />
+                                            ))}
+                                        </div>
+
+                                        {/* Content */}
+                                        <p className={`text-sm leading-relaxed mb-6 relative z-10 line-clamp-4
+                                            ${isDark ? 'text-dark-text/70' : 'text-light-text/70'}`}>
+                                            "{testimonial.content}"
+                                        </p>
+
+                                        {/* Author */}
+                                        <div className="flex items-center gap-3">
+                                            {testimonial.image_url ? (
+                                                <img
+                                                    src={testimonial.image_url}
+                                                    alt={testimonial.name}
+                                                    className="w-10 h-10 rounded-full object-cover border border-gold/20"
+                                                />
+                                            ) : (
+                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold uppercase
+                                                    ${isDark
+                                                        ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
+                                                        : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
+                                                    {testimonial.name.charAt(0)}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h4 className={`text-sm font-semibold
+                                                    ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
+                                                    {testimonial.name}
+                                                </h4>
+                                                {testimonial.role && (
+                                                    <p className={`text-xs
+                                                        ${isDark ? 'text-dark-text/40' : 'text-light-text/50'}`}>
+                                                        {testimonial.role}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+
+                            {/* Pagination */}
+                            {totalTestimonialPages > 1 && (
+                                <div className="flex items-center justify-center gap-4 pt-4">
+                                    <button
+                                        onClick={() => setTestimonialPage(p => Math.max(0, p - 1))}
+                                        disabled={testimonialPage === 0}
+                                        className={`p-2 rounded-full border transition-all duration-300
+                                            ${testimonialPage === 0
+                                                ? 'opacity-30 cursor-not-allowed border-transparent'
+                                                : isDark
+                                                    ? 'border-dark-border text-dark-text hover:bg-gold/10 hover:border-gold/30'
+                                                    : 'border-beige-dark/20 text-charcoal hover:bg-gold/10 hover:border-gold/30'}`}
+                                    >
+                                        <ChevronLeft size={20} />
+                                    </button>
+
+                                    <div className="flex gap-2">
+                                        {Array.from({ length: totalTestimonialPages }).map((_, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setTestimonialPage(i)}
+                                                className={`h-1.5 rounded-full transition-all duration-500
+                                                    ${testimonialPage === i
+                                                        ? 'bg-gold w-8'
+                                                        : isDark
+                                                            ? 'bg-dark-border w-2 hover:bg-gold/40'
+                                                            : 'bg-beige-dark/30 w-2 hover:bg-gold/40'}`}
                                             />
                                         ))}
                                     </div>
 
-                                    {/* Content */}
-                                    <p className={`text-sm leading-relaxed mb-6 relative z-10
-                                        ${isDark ? 'text-dark-text/70' : 'text-light-text/70'}`}>
-                                        "{testimonial.content}"
-                                    </p>
-
-                                    {/* Author */}
-                                    <div className="flex items-center gap-3">
-                                        {testimonial.image_url ? (
-                                            <img
-                                                src={testimonial.image_url}
-                                                alt={testimonial.name}
-                                                className="w-10 h-10 rounded-full object-cover border border-gold/20"
-                                            />
-                                        ) : (
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold uppercase
-                                                ${isDark
-                                                    ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
-                                                    : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
-                                                {testimonial.name.charAt(0)}
-                                            </div>
-                                        )}
-                                        <div>
-                                            <h4 className={`text-sm font-semibold
-                                                ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
-                                                {testimonial.name}
-                                            </h4>
-                                            {testimonial.role && (
-                                                <p className={`text-xs
-                                                    ${isDark ? 'text-dark-text/40' : 'text-light-text/50'}`}>
-                                                    {testimonial.role}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </motion.div>
-                            ))}
+                                    <button
+                                        onClick={() => setTestimonialPage(p => Math.min(totalTestimonialPages - 1, p + 1))}
+                                        disabled={testimonialPage === totalTestimonialPages - 1}
+                                        className={`p-2 rounded-full border transition-all duration-300
+                                            ${testimonialPage === totalTestimonialPages - 1
+                                                ? 'opacity-30 cursor-not-allowed border-transparent'
+                                                : isDark
+                                                    ? 'border-dark-border text-dark-text hover:bg-gold/10 hover:border-gold/30'
+                                                    : 'border-beige-dark/20 text-charcoal hover:bg-gold/10 hover:border-gold/30'}`}
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
             </section>
+
+            {/* ===== TESTIMONIAL DETAIL MODAL ===== */}
+            <AnimatePresence>
+                {selectedTestimonial && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md"
+                        onClick={() => setSelectedTestimonial(null)}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className={`w-full max-w-2xl overflow-hidden rounded-3xl relative shadow-2xl
+                                ${isDark ? 'bg-dark-surface border border-dark-border' : 'bg-white border border-beige-dark/20'}`}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Close Button */}
+                            <button
+                                onClick={() => setSelectedTestimonial(null)}
+                                className={`absolute top-6 right-6 p-2 rounded-full z-10 transition-colors
+                                    ${isDark ? 'hover:bg-dark-card text-dark-text/40 hover:text-dark-text' : 'hover:bg-beige text-light-text/40 hover:text-charcoal'}`}
+                            >
+                                <X size={20} />
+                            </button>
+
+                            <div className="p-8 sm:p-12">
+                                <Quote size={48} className={`mb-8 ${isDark ? 'text-gold/20' : 'text-gold/20'}`} />
+
+                                <div className="flex items-center gap-1 mb-6">
+                                    {Array.from({ length: 5 }).map((_, starIdx) => (
+                                        <Star
+                                            key={starIdx}
+                                            size={20}
+                                            className={starIdx < selectedTestimonial.rating
+                                                ? 'text-gold fill-gold'
+                                                : isDark ? 'text-dark-border' : 'text-beige-dark/40'}
+                                        />
+                                    ))}
+                                </div>
+
+                                <p className={`text-lg sm:text-xl font-serif italic leading-relaxed mb-10
+                                    ${isDark ? 'text-dark-text/90' : 'text-charcoal/90'}`}>
+                                    "{selectedTestimonial.content}"
+                                </p>
+
+                                <div className="flex items-center gap-4 border-t pt-8 border-gold/10">
+                                    {selectedTestimonial.image_url ? (
+                                        <img
+                                            src={selectedTestimonial.image_url}
+                                            alt={selectedTestimonial.name}
+                                            className="w-14 h-14 rounded-full object-cover border-2 border-gold/20"
+                                        />
+                                    ) : (
+                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-bold uppercase
+                                            ${isDark
+                                                ? 'bg-gradient-to-br from-gold-muted/20 to-gold/10 text-gold border border-gold-muted/20'
+                                                : 'bg-gradient-to-br from-gold/15 to-gold/5 text-gold border border-gold/20'}`}>
+                                            {selectedTestimonial.name.charAt(0)}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <h4 className={`text-lg font-semibold
+                                            ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
+                                            {selectedTestimonial.name}
+                                        </h4>
+                                        {selectedTestimonial.role && (
+                                            <p className={`text-sm
+                                                ${isDark ? 'text-dark-text/40' : 'text-light-text/50'}`}>
+                                                {selectedTestimonial.role}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* ===== CTA / CONTACT SECTION ===== */}
             <section id="contact" className={`py-24 sm:py-32 ${isDark ? 'bg-dark-surface' : 'bg-beige/30'}`}>
@@ -479,11 +621,11 @@ export default function LandingPage() {
                         transition={{ duration: 0.6 }}
                     >
                         <h2 className={`font-serif text-3xl sm:text-4xl md:text-5xl font-bold mb-6
-              ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
+                            ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
                             Bring <span className="text-gradient">Tradition</span> Home
                         </h2>
                         <p className={`text-base leading-relaxed mb-10 max-w-xl mx-auto
-              ${isDark ? 'text-dark-text/50' : 'text-light-text/60'}`}>
+                            ${isDark ? 'text-dark-text/50' : 'text-light-text/60'}`}>
                             Interested in our kolam stencils? Get in touch with us to explore custom designs,
                             bulk orders, or any inquiries about our collection.
                         </p>
