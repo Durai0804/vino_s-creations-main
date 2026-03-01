@@ -461,12 +461,12 @@ export default function LandingPage() {
                                         </div>
 
                                         {/* Image Side - Impact Layout */}
-                                        <div className="w-[100px] sm:w-[130px] relative shrink-0 overflow-hidden border-l border-gold/10">
+                                        <div className={`w-[100px] sm:w-[130px] relative shrink-0 overflow-hidden border-l border-gold/10 ${isDark ? 'bg-dark-surface/50' : 'bg-beige/20'}`}>
                                             {testimonial.image_url ? (
                                                 <img
                                                     src={testimonial.image_url}
                                                     alt={testimonial.name}
-                                                    className="absolute inset-0 w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700"
+                                                    className="absolute inset-0 w-full h-full object-contain grayscale-[20%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700"
                                                 />
                                             ) : (
                                                 <div className={`absolute inset-0 flex items-center justify-center text-2xl font-bold uppercase
@@ -597,12 +597,12 @@ export default function LandingPage() {
                                 </div>
 
                                 {/* Image Side - Visual Impact */}
-                                <div className="w-full md:w-[280px] lg:w-[320px] aspect-video md:aspect-auto relative shrink-0 order-1 md:order-2">
+                                <div className={`w-full md:w-[280px] lg:w-[320px] aspect-video md:aspect-auto relative shrink-0 order-1 md:order-2 ${isDark ? 'bg-dark-surface' : 'bg-beige/10'}`}>
                                     {selectedTestimonial.image_url ? (
                                         <img
                                             src={selectedTestimonial.image_url}
                                             alt={selectedTestimonial.name}
-                                            className="absolute inset-0 w-full h-full object-cover"
+                                            className="absolute inset-0 w-full h-full object-contain"
                                         />
                                     ) : (
                                         <div className={`absolute inset-0 flex items-center justify-center text-6xl font-bold uppercase

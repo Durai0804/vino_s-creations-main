@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useProducts } from '../../hooks/useProducts';
 import { useTestimonials } from '../../hooks/useTestimonials';
 import { productService, testimonialService } from '../../services/api';
-import type { Product, ProductFormData, TestimonialFormData } from '../../types';
+import type { Product, ProductFormData, Testimonial, TestimonialFormData } from '../../types';
 import { useNavigate } from 'react-router-dom';
 
 export default function AdminDashboard() {
@@ -19,6 +19,7 @@ export default function AdminDashboard() {
 
     // Testimonial state
     const [showTestimonialForm, setShowTestimonialForm] = useState(false);
+    const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
     const [testimonialFormLoading, setTestimonialFormLoading] = useState(false);
     const [testimonialFormError, setTestimonialFormError] = useState('');
     const [deleteTestimonialConfirm, setDeleteTestimonialConfirm] = useState<string | null>(null);
@@ -149,17 +150,43 @@ export default function AdminDashboard() {
 
     // Testimonial handlers
     const resetTestimonialForm = () => {
-        setTestimonialFormData({ name: '', role: '', content: '', rating: 5, image: null });
+        setTestimonialFormData({
+            name: '',
+            role: '',
+            content: '',
+            rating: 5,
+            image: null,
+            existing_image_url: undefined
+        });
+        setEditingTestimonial(null);
         setShowTestimonialForm(false);
         setTestimonialFormError('');
+    };
+
+    const openEditTestimonialForm = (testimonial: Testimonial) => {
+        setEditingTestimonial(testimonial);
+        setTestimonialFormData({
+            name: testimonial.name,
+            role: testimonial.role || '',
+            content: testimonial.content,
+            rating: testimonial.rating,
+            image: null,
+            existing_image_url: testimonial.image_url
+        });
+        setShowTestimonialForm(true);
     };
 
     const handleTestimonialSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setTestimonialFormLoading(true);
         setTestimonialFormError('');
+
         try {
-            await testimonialService.create(testimonialFormData);
+            if (editingTestimonial) {
+                await testimonialService.update(editingTestimonial.id, testimonialFormData);
+            } else {
+                await testimonialService.create(testimonialFormData);
+            }
             resetTestimonialForm();
             refetchTestimonials();
         } catch (err) {
@@ -403,18 +430,31 @@ export default function AdminDashboard() {
                                     className={`relative p-5 rounded-2xl group
                                         ${isDark ? 'bg-dark-card border border-dark-border' : 'bg-white border border-beige-dark/20'}`}
                                 >
-                                    {/* Delete button */}
-                                    <motion.button
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={() => setDeleteTestimonialConfirm(testimonial.id)}
-                                        className={`absolute top-3 right-3 p-1.5 rounded-full transition-all duration-200
-                                            ${isDark
-                                                ? 'text-dark-text/20 hover:text-red-400 hover:bg-red-400/10'
-                                                : 'text-light-text/20 hover:text-red-500 hover:bg-red-500/10'}`}
-                                    >
-                                        <Trash2 size={14} />
-                                    </motion.button>
+                                    {/* Edit and Delete buttons */}
+                                    <div className="absolute top-3 right-3 flex gap-2">
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() => openEditTestimonialForm(testimonial)}
+                                            className={`p-1.5 rounded-full transition-all duration-200
+                                                ${isDark
+                                                    ? 'text-dark-text/20 hover:text-gold hover:bg-gold/10'
+                                                    : 'text-light-text/20 hover:text-gold hover:bg-gold/10'}`}
+                                        >
+                                            <Edit size={14} />
+                                        </motion.button>
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() => setDeleteTestimonialConfirm(testimonial.id)}
+                                            className={`p-1.5 rounded-full transition-all duration-200
+                                                ${isDark
+                                                    ? 'text-dark-text/20 hover:text-red-400 hover:bg-red-400/10'
+                                                    : 'text-light-text/20 hover:text-red-500 hover:bg-red-500/10'}`}
+                                        >
+                                            <Trash2 size={14} />
+                                        </motion.button>
+                                    </div>
 
                                     {/* Stars */}
                                     <div className="flex items-center gap-0.5 mb-3">
@@ -780,7 +820,7 @@ export default function AdminDashboard() {
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className={`font-serif text-xl font-bold
                                     ${isDark ? 'text-dark-text' : 'text-charcoal'}`}>
-                                    Add New Testimonial
+                                    {editingTestimonial ? 'Edit Testimonial' : 'Add New Testimonial'}
                                 </h2>
                                 <button
                                     onClick={resetTestimonialForm}
@@ -896,16 +936,16 @@ export default function AdminDashboard() {
                                     </label>
 
                                     {/* Image Preview */}
-                                    {testimonialFormData.image && (
+                                    {(testimonialFormData.image || testimonialFormData.existing_image_url) && (
                                         <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gold/20 mb-3">
                                             <img
-                                                src={URL.createObjectURL(testimonialFormData.image)}
+                                                src={testimonialFormData.image ? URL.createObjectURL(testimonialFormData.image) : testimonialFormData.existing_image_url}
                                                 alt="Preview"
                                                 className="w-full h-full object-cover"
                                             />
                                             <button
                                                 type="button"
-                                                onClick={() => setTestimonialFormData({ ...testimonialFormData, image: null })}
+                                                onClick={() => setTestimonialFormData({ ...testimonialFormData, image: null, existing_image_url: undefined })}
                                                 className="absolute top-0.5 right-0.5 p-1 bg-red-500 text-white rounded-full transition-transform hover:scale-110 shadow-md"
                                             >
                                                 <X size={10} />
@@ -917,9 +957,10 @@ export default function AdminDashboard() {
                                         ${isDark ? 'border-dark-border hover:border-gold-muted/30 hover:bg-gold-muted/5' : 'border-beige-dark/30 hover:border-gold/30 hover:bg-gold/5'}`}>
                                         <Upload size={18} className={`mb-1 ${isDark ? 'text-dark-text/30' : 'text-light-text/30'}`} />
                                         <span className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-dark-text/40' : 'text-light-text/40'}`}>
-                                            {testimonialFormData.image ? 'Change Photo' : 'Upload Photo'}
+                                            {testimonialFormData.image || testimonialFormData.existing_image_url ? 'Change Photo' : 'Upload Photo'}
                                         </span>
                                         <input
+                                            id="testimonial-image"
                                             type="file"
                                             accept="image/*"
                                             className="hidden"
@@ -937,9 +978,9 @@ export default function AdminDashboard() {
                                     disabled={testimonialFormLoading}
                                     whileHover={{ scale: testimonialFormLoading ? 1 : 1.02 }}
                                     whileTap={{ scale: testimonialFormLoading ? 1 : 0.98 }}
-                                    className={`w-full py-3.5 rounded-xl text-sm font-semibold uppercase tracking-wider transition-all duration-300
-                                        ${testimonialFormLoading ? 'opacity-60 cursor-not-allowed' : ''}
-                                        bg-gradient-to-r from-gold to-gold-muted text-charcoal shadow-lg shadow-gold/10`}
+                                    className={`w-full py-3.5 rounded-xl text-sm font-semibold uppercase tracking-wider transition-all duration-300 mt-2
+                                            ${testimonialFormLoading ? 'opacity-60 cursor-not-allowed' : ''}
+                                            bg-gradient-to-r from-gold to-gold-muted text-charcoal shadow-lg shadow-gold/10`}
                                 >
                                     {testimonialFormLoading ? (
                                         <span className="flex items-center justify-center gap-2">
@@ -949,7 +990,7 @@ export default function AdminDashboard() {
                                     ) : (
                                         <span className="flex items-center justify-center gap-2">
                                             <Save size={16} />
-                                            Publish Testimonial
+                                            {editingTestimonial ? 'Update Testimonial' : 'Publish Testimonial'}
                                         </span>
                                     )}
                                 </motion.button>
@@ -1006,6 +1047,6 @@ export default function AdminDashboard() {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </div >
     );
 }

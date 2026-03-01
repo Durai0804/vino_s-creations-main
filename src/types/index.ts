@@ -45,4 +45,5 @@ export interface TestimonialFormData {
     content: string;
     rating: number;
     image?: File | null;
+    existing_image_url?: string;
 }

@@ -23,6 +23,7 @@ router.get('/', testimonialController.getAllTestimonials);
 
 // Protected routes (admin only)
 router.post('/', authMiddleware, upload.single('image'), testimonialController.createTestimonial);
+router.put('/:id', authMiddleware, upload.single('image'), testimonialController.updateTestimonial);
 router.delete('/:id', authMiddleware, testimonialController.deleteTestimonial);
 
 module.exports = router;

@@ -113,6 +113,59 @@ exports.createTestimonial = async (req, res) => {
     }
 };
 
+// UPDATE testimonial
+exports.updateTestimonial = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, role, content, rating, existing_image_url } = req.body;
+
+        const docRef = db.collection(COLLECTION).doc(id);
+        const doc = await docRef.get();
+        if (!doc.exists) {
+            return res.status(404).json({ error: 'Testimonial not found' });
+        }
+
+        const ratingNum = Number(rating);
+        if (isNaN(ratingNum) || ratingNum < 1 || ratingNum > 5) {
+            return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+        }
+
+        let image_url = existing_image_url || null;
+
+        // If a new file is uploaded
+        if (req.file) {
+            // Delete old image if it exists
+            const oldData = doc.data();
+            if (oldData.image_url) {
+                await deleteImage(oldData.image_url);
+            }
+            // Upload new image
+            image_url = await uploadImage(req.file);
+        } else if (!existing_image_url && doc.data().image_url) {
+            // If existing_image_url is explicitly removed/not provided but it existed before, delete it
+            await deleteImage(doc.data().image_url);
+            image_url = null;
+        }
+
+        const updatedData = {
+            name,
+            role: role || null,
+            content,
+            rating: ratingNum,
+            image_url,
+            updated_at: new Date().toISOString(),
+        };
+
+        await docRef.update(updatedData);
+        res.json({
+            testimonial: { id, ...updatedData }
+        });
+    } catch (error) {
+        console.error('Update testimonial error:', error.message);
+        res.status(500).json({ error: 'Failed to update testimonial' });
+    }
+};
+
 // DELETE testimonial
 exports.deleteTestimonial = async (req, res) => {
     try {

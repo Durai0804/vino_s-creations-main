@@ -150,6 +150,31 @@ export const testimonialService = {
         return data.testimonial;
     },
 
+    async update(id: string, formData: TestimonialFormData): Promise<Testimonial> {
+        const authHeaders = await getAuthHeaders();
+        const body = new FormData();
+
+        body.append('name', formData.name);
+        body.append('content', formData.content);
+        body.append('rating', String(formData.rating));
+        if (formData.role) body.append('role', formData.role);
+        if (formData.image) body.append('image', formData.image);
+        if (formData.existing_image_url) body.append('existing_image_url', formData.existing_image_url);
+
+        const res = await fetch(`${API_BASE}/testimonials/${id}`, {
+            method: 'PUT',
+            headers: authHeaders,
+            body,
+        });
+
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.error || 'Failed to update testimonial');
+        }
+        const data = await res.json();
+        return data.testimonial;
+    },
+
     async delete(id: string): Promise<void> {
         const authHeaders = await getAuthHeaders();
         const res = await fetch(`${API_BASE}/testimonials/${id}`, {
